@@ -1,0 +1,817 @@
+name: Build Rimas Themes APK
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write project files
+        run: |
+          mkdir -p RimasThemes
+          cat > RimasThemes/settings.gradle.kts <<'EOF_1'
+          pluginManagement {
+              repositories { google(); mavenCentral(); gradlePluginPortal() }
+          }
+          dependencyResolutionManagement {
+              repositories { google(); mavenCentral() }
+          }
+          rootProject.name = "RimasThemes"
+          include(":app")
+          EOF_1
+          mkdir -p RimasThemes
+          cat > RimasThemes/build.gradle.kts <<'EOF_2'
+          plugins {
+              id("com.android.application") version "8.5.2" apply false
+              id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+          }
+          EOF_2
+          mkdir -p RimasThemes
+          cat > RimasThemes/gradle.properties <<'EOF_3'
+          org.gradle.jvmargs=-Xmx2g
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          kotlin.code.style=official
+          EOF_3
+          mkdir -p RimasThemes/app
+          cat > RimasThemes/app/build.gradle.kts <<'EOF_4'
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+          }
+          android {
+              namespace = "com.rimas.themes"
+              compileSdk = 34
+              defaultConfig {
+                  applicationId = "com.rimas.themes"
+                  minSdk = 24
+                  targetSdk = 34
+                  versionCode = 1
+                  versionName = "1.0"
+              }
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions { jvmTarget = "17" }
+          }
+          EOF_4
+          mkdir -p RimasThemes/app/src/main
+          cat > RimasThemes/app/src/main/AndroidManifest.xml <<'EOF_5'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.SET_WALLPAPER" />
+              <queries>
+                  <intent>
+                      <action android:name="android.intent.action.MAIN" />
+                      <category android:name="android.intent.category.LAUNCHER" />
+                  </intent>
+              </queries>
+              <application
+                  android:label="@string/app_name"
+                  android:icon="@drawable/ic_launcher"
+                  android:supportsRtl="true"
+                  android:theme="@android:style/Theme.Material.Light.NoActionBar">
+                  <activity android:name=".MainActivity" android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+                  <activity android:name=".CategoryActivity" android:exported="false" />
+                  <activity android:name=".DetailActivity" android:exported="false" />
+                  <activity android:name=".AppPickerActivity" android:exported="false" />
+                  <receiver android:name=".ClockWidget" android:label="ساعة ريماس" android:exported="false">
+                      <intent-filter>
+                          <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                      </intent-filter>
+                      <meta-data android:name="android.appwidget.provider" android:resource="@xml/clock_widget_info" />
+                  </receiver>
+              </application>
+          </manifest>
+          EOF_5
+          mkdir -p RimasThemes/app/src/main/res/values
+          cat > RimasThemes/app/src/main/res/values/strings.xml <<'EOF_6'
+          <resources>
+              <string name="app_name">ثيمات الاميره ريماس</string>
+          </resources>
+          EOF_6
+          mkdir -p RimasThemes/app/src/main/res/xml
+          cat > RimasThemes/app/src/main/res/xml/clock_widget_info.xml <<'EOF_7'
+          <?xml version="1.0" encoding="utf-8"?>
+          <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+              android:minWidth="250dp"
+              android:minHeight="110dp"
+              android:updatePeriodMillis="0"
+              android:initialLayout="@layout/widget_clock"
+              android:resizeMode="horizontal|vertical"
+              android:widgetCategory="home_screen" />
+          EOF_7
+          mkdir -p RimasThemes/app/src/main/res/layout
+          cat > RimasThemes/app/src/main/res/layout/widget_clock.xml <<'EOF_8'
+          <?xml version="1.0" encoding="utf-8"?>
+          <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+              <ImageView
+                  android:id="@+id/bg"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:scaleType="fitXY" />
+              <LinearLayout
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="right|center_vertical"
+                  android:gravity="right"
+                  android:orientation="vertical"
+                  android:paddingRight="20dp">
+                  <TextClock
+                      android:id="@+id/time"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:format12Hour="h:mm"
+                      android:format24Hour="HH:mm"
+                      android:textSize="40sp"
+                      android:textStyle="bold" />
+                  <TextClock
+                      android:id="@+id/date"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:format12Hour="EEEE d MMMM"
+                      android:format24Hour="EEEE d MMMM"
+                      android:textSize="13sp" />
+              </LinearLayout>
+          </FrameLayout>
+          EOF_8
+          mkdir -p RimasThemes/app/src/main/res/drawable
+          cat > RimasThemes/app/src/main/res/drawable/ic_launcher.xml <<'EOF_9'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFC1D9" android:pathData="M0,0h24v24h-24z" />
+              <group android:scaleX="0.62" android:scaleY="0.62" android:pivotX="12" android:pivotY="12">
+                  <path android:fillColor="#E91E63"
+                      android:pathData="M12,21.35l-1.45,-1.32C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3c1.74,0 3.41,0.81 4.5,2.09C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.42 22,8.5c0,3.78 -3.4,6.86 -8.55,11.54L12,21.35z" />
+              </group>
+          </vector>
+          EOF_9
+          mkdir -p RimasThemes/app/src/main/java/com/rimas/themes
+          cat > RimasThemes/app/src/main/java/com/rimas/themes/Themes.kt <<'EOF_10'
+          package com.rimas.themes
+
+          import android.graphics.Color
+
+          private fun lum(c: Int): Double =
+              (0.299 * Color.red(c) + 0.587 * Color.green(c) + 0.114 * Color.blue(c)) / 255.0
+
+          class Theme(val name: String, ca: String, cb: String, ci: String, ch: String, cbow: String) {
+              val a = Color.parseColor(ca)
+              val b = Color.parseColor(cb)
+              val icon = Color.parseColor(ci)
+              val hair = Color.parseColor(ch)
+              val bow = Color.parseColor(cbow)
+              val ink = if ((lum(a) + lum(b)) / 2 > 0.55) Color.parseColor("#3A1F3D") else Color.WHITE
+          }
+
+          val THEMES = listOf(
+              Theme("ريماس الوردي", "#FFC1D9", "#FFE9F2", "#F06292", "#6B3F4F", "#FF4F8B"),
+              Theme("ريبون الساتان", "#F8BBD0", "#FCE4EC", "#D81B60", "#2B1B2E", "#FF80AB"),
+              Theme("لافندر حالم", "#CDB8FF", "#EFE7FF", "#7E57C2", "#3B2A66", "#B388FF"),
+              Theme("نعناع كاواي", "#A8F0DA", "#E3FCF4", "#26A69A", "#2E4A4A", "#FF8FB1"),
+              Theme("سماء باستيل", "#A9D6FF", "#E6F4FF", "#42A5F5", "#1F3A66", "#FFB3D1"),
+              Theme("فراولة", "#FF8FA8", "#FFD6DF", "#E53958", "#4A1F2A", "#FFFFFF"),
+              Theme("ليمون مشمس", "#FFE66D", "#FFF8CC", "#F2A900", "#5A3E1B", "#FF7AA8"),
+              Theme("توت بنفسجي", "#D58CFF", "#F6D8FF", "#A21CAF", "#2A1038", "#FFD84D"),
+              Theme("مرجان الغروب", "#FF9E8F", "#FFD9B8", "#F4623A", "#5C2A1F", "#FFF1A6"),
+              Theme("بحر فيروزي", "#5CE1D6", "#C4F8F3", "#00897B", "#12383A", "#FF9ECF"),
+              Theme("ليلة النجوم", "#8E7CFF", "#CBB8FF", "#4527A0", "#E8E0FF", "#FFD54F"),
+              Theme("ورد جوري", "#F06292", "#FFB3CC", "#AD1457", "#3D1020", "#FFFFFF"),
+              Theme("كراميل حلو", "#FFC48C", "#FFE8CC", "#C77721", "#4A2F1B", "#FF8A80"),
+              Theme("ربيع أخضر", "#B6EE7C", "#EAFCCB", "#4CAF50", "#2F4A1F", "#FF9ECF"),
+              Theme("غيمة قطن", "#FFC8DD", "#BDE0FE", "#7C8CF8", "#4A3F6B", "#FF80AB"),
+              Theme("أرجواني ملكي", "#B05EEA", "#E8C2FF", "#6A1B9A", "#1E0F2E", "#FFD54F"),
+              Theme("شمام", "#FFB997", "#FFE5D4", "#F57C4A", "#5A2F1F", "#8BD3C7"),
+              Theme("أزرق ثلجي", "#7CC4FF", "#EAF6FF", "#1E88E5", "#9FB4E8", "#3F7FD6"),
+              Theme("عنابي لامع", "#E94B78", "#FFA3BC", "#B3123F", "#2B0A14", "#FFFFFF"),
+              Theme("قوس قزح", "#FFADAD", "#9BF6FF", "#B26BFF", "#FF8FB1", "#FFD84D")
+          )
+          EOF_10
+          mkdir -p RimasThemes/app/src/main/java/com/rimas/themes
+          cat > RimasThemes/app/src/main/java/com/rimas/themes/Art.kt <<'EOF_11'
+          package com.rimas.themes
+
+          import android.content.Context
+          import android.graphics.*
+          import android.graphics.drawable.Drawable
+          import android.view.View
+          import android.widget.TextView
+          import java.util.Random
+
+          enum class Kind { WALL, ICON, CLOCK }
+
+          fun Context.dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
+
+          fun Context.label(text: String, size: Float, color: String, bold: Boolean): TextView {
+              val t = TextView(this)
+              t.text = text
+              t.textSize = size
+              t.setTextColor(Color.parseColor(color))
+              if (bold) t.typeface = Typeface.DEFAULT_BOLD
+              return t
+          }
+
+          fun drawCharacter(c: Canvas, cx: Float, cy: Float, size: Float, t: Theme) {
+              val p = Paint(Paint.ANTI_ALIAS_FLAG)
+              c.save()
+              c.translate(cx - size / 2, cy - size / 2)
+              val s = size / 60f
+              c.scale(s, s)
+              p.color = t.hair
+              c.drawCircle(30f, 30f, 25f, p)
+              p.color = Color.parseColor("#FFE6D5")
+              c.drawCircle(30f, 35f, 18f, p)
+              p.color = t.hair
+              val bangs = Path()
+              bangs.moveTo(11f, 33f)
+              bangs.quadTo(14f, 6f, 30f, 6f)
+              bangs.quadTo(46f, 6f, 49f, 33f)
+              bangs.quadTo(42f, 19f, 30f, 22f)
+              bangs.quadTo(18f, 19f, 11f, 33f)
+              bangs.close()
+              c.drawPath(bangs, p)
+              p.color = Color.parseColor("#3A1F3D")
+              c.drawOval(RectF(20f, 32.5f, 26f, 41.5f), p)
+              c.drawOval(RectF(34f, 32.5f, 40f, 41.5f), p)
+              p.color = Color.WHITE
+              c.drawCircle(24f, 35.5f, 1.2f, p)
+              c.drawCircle(38f, 35.5f, 1.2f, p)
+              p.color = Color.parseColor("#99FF9EB5")
+              c.drawCircle(17f, 42f, 3f, p)
+              c.drawCircle(43f, 42f, 3f, p)
+              p.style = Paint.Style.STROKE
+              p.strokeWidth = 1.5f
+              p.strokeCap = Paint.Cap.ROUND
+              p.color = Color.parseColor("#C2185B")
+              val mouth = Path()
+              mouth.moveTo(27f, 44f)
+              mouth.quadTo(30f, 47f, 33f, 44f)
+              c.drawPath(mouth, p)
+              p.style = Paint.Style.FILL
+              p.color = t.bow
+              c.save(); c.rotate(-25f, 45f, 12f); c.drawOval(RectF(39f, 8f, 51f, 16f), p); c.restore()
+              c.save(); c.rotate(20f, 53f, 9f); c.drawOval(RectF(48f, 5.5f, 58f, 12.5f), p); c.restore()
+              c.restore()
+          }
+
+          fun drawHeart(c: Canvas, x: Float, y: Float, s: Float, p: Paint) {
+              val h = Path()
+              h.moveTo(x, y + s * 0.9f)
+              h.cubicTo(x - s * 1.4f, y - s * 0.1f, x - s * 0.7f, y - s * 1.1f, x, y - s * 0.4f)
+              h.cubicTo(x + s * 0.7f, y - s * 1.1f, x + s * 1.4f, y - s * 0.1f, x, y + s * 0.9f)
+              h.close()
+              c.drawPath(h, p)
+          }
+
+          fun drawStar(c: Canvas, cx: Float, cy: Float, r: Float, p: Paint) {
+              val path = Path()
+              for (i in 0 until 10) {
+                  val rad = if (i % 2 == 0) r else r * 0.45f
+                  val ang = Math.toRadians((-90 + i * 36).toDouble())
+                  val x = cx + (rad * Math.cos(ang)).toFloat()
+                  val y = cy + (rad * Math.sin(ang)).toFloat()
+                  if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+              }
+              path.close()
+              c.drawPath(path, p)
+          }
+
+          fun drawTileBg(c: Canvas, x: Float, y: Float, s: Float, t: Theme) {
+              val p = Paint(Paint.ANTI_ALIAS_FLAG)
+              val r = RectF(x + s * 0.03f, y + s * 0.03f, x + s * 0.97f, y + s * 0.97f)
+              p.shader = LinearGradient(x, y, x + s, y + s, t.a, t.b, Shader.TileMode.CLAMP)
+              c.drawRoundRect(r, s * 0.28f, s * 0.28f, p)
+              p.shader = null
+              p.style = Paint.Style.STROKE
+              p.strokeWidth = s * 0.04f
+              p.color = t.icon
+              c.drawRoundRect(r, s * 0.28f, s * 0.28f, p)
+          }
+
+          fun drawGlyph(c: Canvas, cx: Float, cy: Float, s: Float, g: Int, t: Theme) {
+              val p = Paint(Paint.ANTI_ALIAS_FLAG)
+              p.color = t.icon
+              when (g) {
+                  0 -> drawHeart(c, cx, cy, s * 0.2f, p)
+                  1 -> drawStar(c, cx, cy, s * 0.26f, p)
+                  2 -> {
+                      for (k in 0 until 5) {
+                          val ang = Math.toRadians((k * 72 - 90).toDouble())
+                          c.drawCircle(cx + (Math.cos(ang) * s * 0.14).toFloat(), cy + (Math.sin(ang) * s * 0.14).toFloat(), s * 0.1f, p)
+                      }
+                      p.color = Color.WHITE
+                      c.drawCircle(cx, cy, s * 0.07f, p)
+                  }
+                  else -> drawCharacter(c, cx, cy, s * 0.8f, t)
+              }
+          }
+
+          fun makeIcon(app: Drawable, t: Theme): Bitmap {
+              val s = 192
+              val bmp = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888)
+              val c = Canvas(bmp)
+              drawTileBg(c, 0f, 0f, s.toFloat(), t)
+              val inner = (s * 0.56f).toInt()
+              val l = (s - inner) / 2
+              app.setBounds(l, l, l + inner, l + inner)
+              app.draw(c)
+              val p = Paint(Paint.ANTI_ALIAS_FLAG)
+              p.color = t.icon
+              drawHeart(c, s * 0.82f, s * 0.2f, s * 0.09f, p)
+              return bmp
+          }
+
+          fun drawWallpaper(c: Canvas, w: Float, h: Float, t: Theme) {
+              val p = Paint(Paint.ANTI_ALIAS_FLAG)
+              p.shader = LinearGradient(0f, 0f, w * 0.5f, h, t.a, t.b, Shader.TileMode.CLAMP)
+              c.drawRect(0f, 0f, w, h, p)
+              p.shader = null
+              p.color = Color.argb(90, 255, 255, 255)
+              val r = Random(t.name.hashCode().toLong())
+              for (i in 0 until 26) {
+                  drawHeart(c, r.nextFloat() * w, r.nextFloat() * h, w * (0.03f + r.nextFloat() * 0.05f), p)
+              }
+              p.color = Color.argb(110, 255, 255, 255)
+              c.drawCircle(w / 2, h * 0.55f, w * 0.36f, p)
+              drawCharacter(c, w / 2, h * 0.55f, w * 0.62f, t)
+          }
+
+          fun drawClockBg(c: Canvas, w: Float, h: Float, t: Theme) {
+              val p = Paint(Paint.ANTI_ALIAS_FLAG)
+              val clip = Path()
+              val rad = h * 0.26f
+              clip.addRoundRect(RectF(0f, 0f, w, h), rad, rad, Path.Direction.CW)
+              c.save()
+              c.clipPath(clip)
+              p.shader = LinearGradient(0f, 0f, w, h, t.a, t.b, Shader.TileMode.CLAMP)
+              c.drawRect(0f, 0f, w, h, p)
+              p.shader = null
+              p.color = Color.argb(90, 255, 255, 255)
+              val r = Random(t.name.hashCode().toLong() + 1)
+              for (i in 0 until 10) {
+                  drawHeart(c, r.nextFloat() * w, r.nextFloat() * h, h * (0.05f + r.nextFloat() * 0.07f), p)
+              }
+              p.color = Color.argb(110, 255, 255, 255)
+              c.drawCircle(h * 0.62f, h * 0.5f, h * 0.42f, p)
+              drawCharacter(c, h * 0.62f, h * 0.5f, h * 0.78f, t)
+              c.restore()
+          }
+
+          class PreviewView(ctx: Context, val t: Theme, val kind: Kind) : View(ctx) {
+              override fun onMeasure(wm: Int, hm: Int) {
+                  val w = MeasureSpec.getSize(wm)
+                  val aspect = when (kind) {
+                      Kind.WALL -> 1.9f
+                      Kind.ICON -> 1.0f
+                      Kind.CLOCK -> 0.45f
+                  }
+                  setMeasuredDimension(w, (w * aspect).toInt())
+              }
+
+              override fun onDraw(c: Canvas) {
+                  val w = width.toFloat()
+                  val h = height.toFloat()
+                  val p = Paint(Paint.ANTI_ALIAS_FLAG)
+                  when (kind) {
+                      Kind.WALL -> {
+                          val clip = Path()
+                          clip.addRoundRect(RectF(0f, 0f, w, h), w * 0.1f, w * 0.1f, Path.Direction.CW)
+                          c.save()
+                          c.clipPath(clip)
+                          drawWallpaper(c, w, h, t)
+                          c.restore()
+                      }
+                      Kind.ICON -> {
+                          p.color = Color.WHITE
+                          c.drawRoundRect(RectF(0f, 0f, w, h), w * 0.1f, w * 0.1f, p)
+                          val s = w * 0.38f
+                          val gap = w * 0.06f
+                          val x0 = (w - 2 * s - gap) / 2
+                          for (i in 0 until 4) {
+                              val x = x0 + (i % 2) * (s + gap)
+                              val y = x0 + (i / 2) * (s + gap)
+                              drawTileBg(c, x, y, s, t)
+                              drawGlyph(c, x + s / 2, y + s / 2, s, i, t)
+                          }
+                      }
+                      Kind.CLOCK -> {
+                          drawClockBg(c, w, h, t)
+                          p.color = t.ink
+                          p.typeface = Typeface.DEFAULT_BOLD
+                          p.textAlign = Paint.Align.RIGHT
+                          p.textSize = h * 0.42f
+                          c.drawText("10:09", w - w * 0.06f, h * 0.58f, p)
+                      }
+                  }
+              }
+          }
+          EOF_11
+          mkdir -p RimasThemes/app/src/main/java/com/rimas/themes
+          cat > RimasThemes/app/src/main/java/com/rimas/themes/MainActivity.kt <<'EOF_12'
+          package com.rimas.themes
+
+          import android.app.Activity
+          import android.content.Intent
+          import android.graphics.Color
+          import android.graphics.drawable.GradientDrawable
+          import android.os.Bundle
+          import android.view.Gravity
+          import android.view.View
+          import android.widget.LinearLayout
+          import android.widget.ScrollView
+
+          class MainActivity : Activity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  window.decorView.layoutDirection = View.LAYOUT_DIRECTION_RTL
+                  val root = LinearLayout(this)
+                  root.orientation = LinearLayout.VERTICAL
+                  root.setPadding(dp(18), dp(40), dp(18), dp(24))
+                  val title = label("♥ ثيمات الاميره ريماس", 26f, "#C2185B", true)
+                  title.setPadding(0, 0, 0, dp(4))
+                  root.addView(title)
+                  val sub = label("اختاري القسم: خلفيات أو أيقونات أو ساعات", 14f, "#5B3A5E", false)
+                  sub.setPadding(0, 0, 0, dp(18))
+                  root.addView(sub)
+
+                  val names = listOf("الخلفيات", "الأيقونات", "الساعات")
+                  val descs = listOf(
+                      "20 خلفية بشخصيات أنمي، تطبقها على الرئيسية أو القفل",
+                      "غيّر شكل أيقونات تطبيقاتك بثيمات زاهية",
+                      "ويدجت ساعة بتصاميم مختلفة تضيفها لشاشتك"
+                  )
+                  val kinds = listOf(Kind.WALL, Kind.ICON, Kind.CLOCK)
+                  val themeIdx = listOf(0, 2, 9)
+                  val widths = listOf(90, 110, 150)
+                  for (i in 0 until 3) {
+                      val card = LinearLayout(this)
+                      card.orientation = LinearLayout.HORIZONTAL
+                      card.gravity = Gravity.CENTER_VERTICAL
+                      card.setPadding(dp(16), dp(16), dp(16), dp(16))
+                      val bg = GradientDrawable()
+                      bg.setColor(Color.WHITE)
+                      bg.cornerRadius = dp(22).toFloat()
+                      bg.setStroke(dp(2), Color.parseColor("#FFC1D9"))
+                      card.background = bg
+                      card.addView(PreviewView(this, THEMES[themeIdx[i]], kinds[i]), LinearLayout.LayoutParams(dp(widths[i]), LinearLayout.LayoutParams.WRAP_CONTENT))
+                      val txt = LinearLayout(this)
+                      txt.orientation = LinearLayout.VERTICAL
+                      txt.setPadding(dp(14), 0, dp(14), 0)
+                      txt.addView(label(names[i], 20f, "#C2185B", true))
+                      txt.addView(label(descs[i], 13f, "#5B3A5E", false))
+                      card.addView(txt, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+                      card.setOnClickListener {
+                          startActivity(Intent(this, CategoryActivity::class.java).putExtra("k", i))
+                      }
+                      val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                      lp.setMargins(0, 0, 0, dp(16))
+                      root.addView(card, lp)
+                  }
+                  val sv = ScrollView(this)
+                  sv.setBackgroundColor(Color.parseColor("#FFF5FA"))
+                  sv.addView(root)
+                  setContentView(sv)
+              }
+          }
+          EOF_12
+          mkdir -p RimasThemes/app/src/main/java/com/rimas/themes
+          cat > RimasThemes/app/src/main/java/com/rimas/themes/CategoryActivity.kt <<'EOF_13'
+          package com.rimas.themes
+
+          import android.app.Activity
+          import android.appwidget.AppWidgetManager
+          import android.content.ComponentName
+          import android.content.Context
+          import android.content.Intent
+          import android.graphics.Color
+          import android.os.Build
+          import android.os.Bundle
+          import android.view.Gravity
+          import android.view.View
+          import android.widget.LinearLayout
+          import android.widget.ScrollView
+          import android.widget.Toast
+
+          class CategoryActivity : Activity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  window.decorView.layoutDirection = View.LAYOUT_DIRECTION_RTL
+                  val kind = Kind.values()[intent.getIntExtra("k", 0)]
+                  val cols = when (kind) {
+                      Kind.WALL -> 3
+                      Kind.ICON -> 2
+                      Kind.CLOCK -> 1
+                  }
+                  val head = when (kind) {
+                      Kind.WALL -> "♥ الخلفيات"
+                      Kind.ICON -> "♥ الأيقونات"
+                      Kind.CLOCK -> "♥ الساعات"
+                  }
+                  val desc = when (kind) {
+                      Kind.WALL -> "اضغطي على خلفية لتطبيقها"
+                      Kind.ICON -> "اختاري ثيم، ثم اختاري التطبيق اللي تبين تغيرين أيقونته وتنضاف على الشاشة الرئيسية"
+                      Kind.CLOCK -> "اضغطي على ساعة لإضافتها كويدجت على الشاشة الرئيسية"
+                  }
+                  val root = LinearLayout(this)
+                  root.orientation = LinearLayout.VERTICAL
+                  root.setPadding(dp(12), dp(40), dp(12), dp(24))
+                  val title = label(head, 26f, "#C2185B", true)
+                  title.setPadding(dp(6), 0, dp(6), dp(4))
+                  root.addView(title)
+                  val sub = label(desc, 14f, "#5B3A5E", false)
+                  sub.setPadding(dp(6), 0, dp(6), dp(16))
+                  root.addView(sub)
+
+                  for (chunk in THEMES.chunked(cols)) {
+                      val row = LinearLayout(this)
+                      row.orientation = LinearLayout.HORIZONTAL
+                      for (t in chunk) {
+                          val card = LinearLayout(this)
+                          card.orientation = LinearLayout.VERTICAL
+                          card.addView(PreviewView(this, t, kind))
+                          val n = label(t.name, 14f, "#3A1F3D", true)
+                          n.gravity = Gravity.CENTER
+                          n.setPadding(0, dp(6), 0, 0)
+                          card.addView(n)
+                          val idx = THEMES.indexOf(t)
+                          card.setOnClickListener { onPick(kind, idx) }
+                          val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                          lp.setMargins(dp(5), 0, dp(5), dp(16))
+                          row.addView(card, lp)
+                      }
+                      for (k in 0 until (cols - chunk.size)) {
+                          row.addView(View(this), LinearLayout.LayoutParams(0, 1, 1f))
+                      }
+                      root.addView(row)
+                  }
+                  val sv = ScrollView(this)
+                  sv.setBackgroundColor(Color.parseColor("#FFF5FA"))
+                  sv.addView(root)
+                  setContentView(sv)
+              }
+
+              private fun onPick(kind: Kind, idx: Int) {
+                  when (kind) {
+                      Kind.WALL -> startActivity(Intent(this, DetailActivity::class.java).putExtra("i", idx))
+                      Kind.ICON -> startActivity(Intent(this, AppPickerActivity::class.java).putExtra("i", idx))
+                      Kind.CLOCK -> addClock(idx)
+                  }
+              }
+
+              private fun addClock(idx: Int) {
+                  getSharedPreferences("rimas", Context.MODE_PRIVATE).edit().putInt("default_clock", idx).apply()
+                  val mgr = AppWidgetManager.getInstance(this)
+                  if (Build.VERSION.SDK_INT >= 26 && mgr.isRequestPinAppWidgetSupported) {
+                      mgr.requestPinAppWidget(ComponentName(this, ClockWidget::class.java), null, null)
+                  } else {
+                      Toast.makeText(this, "اضغطي مطولاً على الشاشة الرئيسية ثم الويدجت ثم ساعة ريماس", Toast.LENGTH_LONG).show()
+                  }
+              }
+          }
+          EOF_13
+          mkdir -p RimasThemes/app/src/main/java/com/rimas/themes
+          cat > RimasThemes/app/src/main/java/com/rimas/themes/DetailActivity.kt <<'EOF_14'
+          package com.rimas.themes
+
+          import android.app.Activity
+          import android.app.WallpaperManager
+          import android.content.res.ColorStateList
+          import android.graphics.Bitmap
+          import android.graphics.Canvas
+          import android.graphics.Color
+          import android.graphics.drawable.GradientDrawable
+          import android.os.Bundle
+          import android.view.Gravity
+          import android.view.View
+          import android.widget.Button
+          import android.widget.LinearLayout
+          import android.widget.ScrollView
+          import android.widget.Toast
+
+          class DetailActivity : Activity() {
+              private lateinit var theme0: Theme
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  window.decorView.layoutDirection = View.LAYOUT_DIRECTION_RTL
+                  theme0 = THEMES[intent.getIntExtra("i", 0)]
+                  val root = LinearLayout(this)
+                  root.orientation = LinearLayout.VERTICAL
+                  root.gravity = Gravity.CENTER_HORIZONTAL
+                  root.setPadding(dp(20), dp(40), dp(20), dp(24))
+
+                  val title = label("♥ " + theme0.name, 24f, "#C2185B", true)
+                  title.setPadding(0, 0, 0, dp(16))
+                  root.addView(title)
+
+                  root.addView(PreviewView(this, theme0, Kind.WALL), LinearLayout.LayoutParams(dp(200), LinearLayout.LayoutParams.WRAP_CONTENT))
+
+                  val sw = LinearLayout(this)
+                  sw.orientation = LinearLayout.HORIZONTAL
+                  sw.setPadding(0, dp(16), 0, dp(16))
+                  for (col in listOf(theme0.a, theme0.b, theme0.icon, theme0.hair)) {
+                      val v = View(this)
+                      val g = GradientDrawable()
+                      g.shape = GradientDrawable.OVAL
+                      g.setColor(col)
+                      g.setStroke(dp(2), Color.WHITE)
+                      v.background = g
+                      val lp = LinearLayout.LayoutParams(dp(36), dp(36))
+                      lp.setMargins(dp(6), 0, dp(6), 0)
+                      sw.addView(v, lp)
+                  }
+                  root.addView(sw)
+
+                  root.addView(btn("تطبيق على الشاشة الرئيسية", WallpaperManager.FLAG_SYSTEM))
+                  root.addView(btn("تطبيق على شاشة القفل", WallpaperManager.FLAG_LOCK))
+                  root.addView(btn("تطبيق على الاثنين", WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK))
+
+                  val sv = ScrollView(this)
+                  sv.setBackgroundColor(Color.parseColor("#FFF5FA"))
+                  sv.addView(root)
+                  setContentView(sv)
+              }
+
+              private fun btn(text: String, flag: Int): Button {
+                  val b = Button(this)
+                  b.text = text
+                  b.setTextColor(Color.WHITE)
+                  b.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#E91E63"))
+                  b.setOnClickListener { applyWall(flag) }
+                  return b
+              }
+
+              private fun applyWall(flag: Int) {
+                  try {
+                      val dm = resources.displayMetrics
+                      val bmp = Bitmap.createBitmap(dm.widthPixels, dm.heightPixels, Bitmap.Config.ARGB_8888)
+                      drawWallpaper(Canvas(bmp), dm.widthPixels.toFloat(), dm.heightPixels.toFloat(), theme0)
+                      WallpaperManager.getInstance(this).setBitmap(bmp, null, true, flag)
+                      Toast.makeText(this, "تم التطبيق ♥", Toast.LENGTH_SHORT).show()
+                  } catch (e: Exception) {
+                      Toast.makeText(this, "تعذر التطبيق", Toast.LENGTH_SHORT).show()
+                  }
+              }
+          }
+          EOF_14
+          mkdir -p RimasThemes/app/src/main/java/com/rimas/themes
+          cat > RimasThemes/app/src/main/java/com/rimas/themes/AppPickerActivity.kt <<'EOF_15'
+          package com.rimas.themes
+
+          import android.app.Activity
+          import android.content.Intent
+          import android.content.pm.ResolveInfo
+          import android.content.pm.ShortcutInfo
+          import android.content.pm.ShortcutManager
+          import android.graphics.Color
+          import android.graphics.drawable.Icon
+          import android.os.Build
+          import android.os.Bundle
+          import android.view.Gravity
+          import android.view.View
+          import android.view.ViewGroup
+          import android.widget.BaseAdapter
+          import android.widget.ImageView
+          import android.widget.LinearLayout
+          import android.widget.ListView
+          import android.widget.Toast
+
+          class AppPickerActivity : Activity() {
+              private lateinit var theme0: Theme
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  window.decorView.layoutDirection = View.LAYOUT_DIRECTION_RTL
+                  theme0 = THEMES[intent.getIntExtra("i", 0)]
+                  val pm = packageManager
+                  val main = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+                  val apps = pm.queryIntentActivities(main, 0)
+                      .filter { it.activityInfo.packageName != packageName }
+                      .sortedBy { it.loadLabel(pm).toString().lowercase() }
+
+                  val root = LinearLayout(this)
+                  root.orientation = LinearLayout.VERTICAL
+                  root.setBackgroundColor(Color.parseColor("#FFF5FA"))
+                  root.setPadding(dp(14), dp(40), dp(14), dp(8))
+                  root.addView(label("♥ " + theme0.name, 24f, "#C2185B", true))
+                  val sub = label("اضغطي على التطبيق لإضافة أيقونته بهذا الثيم للشاشة الرئيسية", 14f, "#5B3A5E", false)
+                  sub.setPadding(0, dp(4), 0, dp(12))
+                  root.addView(sub)
+
+                  val list = ListView(this)
+                  list.adapter = object : BaseAdapter() {
+                      override fun getCount(): Int = apps.size
+                      override fun getItem(position: Int): Any = apps[position]
+                      override fun getItemId(position: Int): Long = position.toLong()
+                      override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+                          val ri = apps[position]
+                          val row = LinearLayout(this@AppPickerActivity)
+                          row.orientation = LinearLayout.HORIZONTAL
+                          row.gravity = Gravity.CENTER_VERTICAL
+                          row.setPadding(dp(8), dp(8), dp(8), dp(8))
+                          val iv = ImageView(this@AppPickerActivity)
+                          iv.setImageDrawable(ri.loadIcon(pm))
+                          row.addView(iv, LinearLayout.LayoutParams(dp(44), dp(44)))
+                          val tv = label(ri.loadLabel(pm).toString(), 16f, "#3A1F3D", false)
+                          tv.setPadding(dp(12), 0, dp(12), 0)
+                          row.addView(tv)
+                          return row
+                      }
+                  }
+                  list.setOnItemClickListener { _, _, pos, _ -> pin(apps[pos]) }
+                  root.addView(list, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+                  setContentView(root)
+              }
+
+              private fun pin(ri: ResolveInfo) {
+                  if (Build.VERSION.SDK_INT < 26) {
+                      Toast.makeText(this, "هذي الميزة تحتاج أندرويد 8 أو أحدث", Toast.LENGTH_LONG).show()
+                      return
+                  }
+                  val sm = getSystemService(ShortcutManager::class.java)
+                  if (sm == null || !sm.isRequestPinShortcutSupported) {
+                      Toast.makeText(this, "الشاشة الرئيسية الحالية ما تدعم إضافة الاختصارات", Toast.LENGTH_LONG).show()
+                      return
+                  }
+                  val pkg = ri.activityInfo.packageName
+                  val launch = packageManager.getLaunchIntentForPackage(pkg)
+                  if (launch == null) {
+                      Toast.makeText(this, "تعذر فتح التطبيق", Toast.LENGTH_SHORT).show()
+                      return
+                  }
+                  val bmp = makeIcon(ri.loadIcon(packageManager), theme0)
+                  val info = ShortcutInfo.Builder(this, "r_" + pkg + "_" + System.currentTimeMillis())
+                      .setShortLabel(ri.loadLabel(packageManager))
+                      .setIcon(Icon.createWithBitmap(bmp))
+                      .setIntent(launch)
+                      .build()
+                  sm.requestPinShortcut(info, null)
+              }
+          }
+          EOF_15
+          mkdir -p RimasThemes/app/src/main/java/com/rimas/themes
+          cat > RimasThemes/app/src/main/java/com/rimas/themes/ClockWidget.kt <<'EOF_16'
+          package com.rimas.themes
+
+          import android.appwidget.AppWidgetManager
+          import android.appwidget.AppWidgetProvider
+          import android.content.Context
+          import android.graphics.Bitmap
+          import android.graphics.Canvas
+          import android.widget.RemoteViews
+
+          class ClockWidget : AppWidgetProvider() {
+              override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
+                  val prefs = context.getSharedPreferences("rimas", Context.MODE_PRIVATE)
+                  for (id in ids) {
+                      val idx = prefs.getInt("w" + id, prefs.getInt("default_clock", 0))
+                      prefs.edit().putInt("w" + id, idx).apply()
+                      mgr.updateAppWidget(id, build(context, idx))
+                  }
+              }
+
+              override fun onDeleted(context: Context, ids: IntArray) {
+                  val e = context.getSharedPreferences("rimas", Context.MODE_PRIVATE).edit()
+                  for (id in ids) e.remove("w" + id)
+                  e.apply()
+              }
+
+              companion object {
+                  fun build(context: Context, idx: Int): RemoteViews {
+                      val t = THEMES[idx]
+                      val bmp = Bitmap.createBitmap(640, 280, Bitmap.Config.ARGB_8888)
+                      drawClockBg(Canvas(bmp), 640f, 280f, t)
+                      val rv = RemoteViews(context.packageName, R.layout.widget_clock)
+                      rv.setImageViewBitmap(R.id.bg, bmp)
+                      rv.setTextColor(R.id.time, t.ink)
+                      rv.setTextColor(R.id.date, t.ink)
+                      return rv
+                  }
+              }
+          }
+          EOF_16
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build APK
+        working-directory: RimasThemes
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RimasThemes-APK
+          path: RimasThemes/app/build/outputs/apk/debug/app-debug.apk
